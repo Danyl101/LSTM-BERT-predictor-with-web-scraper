@@ -1,0 +1,12 @@
+numpy
+pandas
+matplotlib
+scikit-learn
+tensorflow==2.13.0
+torch
+transformers
+selenium
+bs4
+requests
+lxml
+joblib   
