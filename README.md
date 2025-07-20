@@ -36,19 +36,19 @@ A hybrid AI model that combines LSTM for time-series prediction and BERT for tex
 git clone https://github.com/Danyl101/LSTM-BERT-predictor-with-web-scraper.git
 cd LSTM-BERT-predictor-with-web-scraper
 ``` 
-###2. Set Up Virtual Environment
+### 2. Set Up Virtual Environment
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-###3. Train the LSTM
+### 3. Train the LSTM
 ```bash
 python Models/LSTM_Model.py
 ```
 
-###4. Run Web Scraper
+### 4. Run Web Scraper
 ```bash
 python Scrapers/Scraper.py
 ```
