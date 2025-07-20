@@ -1,7 +1,7 @@
 							      DATA MANIPULATION DEBUG LOG
 
 
-Tags:[Pandas,Index,Mismatch,Dataframe,Numpy,Standardization]
+Tags:[Pandas,Index,Mismatch,Dataframe,Numpy,Standardization,JSON]
 ________________________________________________________________________________________
 Error  [Pandas]
 
@@ -133,3 +133,28 @@ Apply log transformation before scaling as log transformation closes the gap bet
 
 
 _____________________________________________________________________________________________
+
+Error [JSON]
+
+with open('Datasets/scraped_articles.json', 'r') as f: #Loads json file 
+    article = json.load(f) 
+
+for content in article:
+    print(f"Extracting content from {content['title']})
+
+{
+  "articles": [
+    {
+      "title": "featured funds\n★★★★★\nuti aggressive hybrid fund regular plan-growth\n5y return\n21.13 %\ninvest now",
+      "link": "https://www.utimf.com/deep-link/custom-arn-link?1967280012&utm_source=economictimes&utm_medium=schemelisting&utm_campaign=yearlong&utm_term=dec&utm_content=2024"
+    }, 
+  ]
+}
+
+Reason & Solution
+
+with open('Datasets/scraped_articles.json', 'r') as f: #Loads json file 
+    article = json.load(f) 
+    json_dict=article["articles"]
+
+So the issue was that variable used to extract json file basically extracted a dictionary containing a dictionary , so when calling "for content in article" basically meant we were calling outside dictionary which does not contain what we need inside of it , so we bypassed this by using another variable , where article extracted outer dictionary and json_dict extracted inside dictionary allowing us access to the data

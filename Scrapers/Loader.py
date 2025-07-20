@@ -3,7 +3,7 @@ import time
 import json
 import os
 import re
-from httpx import TimeoutException
+from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -27,8 +27,6 @@ with open('Datasets/scraped_articles.json', 'r') as f: #Loads json file
     json_dict=article["articles"] #articles is dictionary inside the json file ,this loads the actual articles into json_dict
 
     os.makedirs('BERT_Content', exist_ok=True)  # Ensure directory exists
-    
-
 
 def setup_driver(): #Setup Chrome WebDriver
     chrome_options=Options()
@@ -39,8 +37,18 @@ def setup_driver(): #Setup Chrome WebDriver
 
 def sanitize_filename(title): #Function to clean the titles , so that names of files will be clean
     return re.sub(r'[\\/*?:"<>|]', "", title)[:100]
-    
 
+def click_and_read(driver):
+    try:
+        buttons=driver.find_elements(By.XPATH, "//button[contains(text(),'Read More') or contains(text(),'Continue Reading') or contains(text(),'Show more')]")#Finds button inside of the html
+        for btn in buttons:
+            if btn.is_displayed() and btn.is_enabled():#Checks if button is enabled 
+                btn.click() 
+                time.sleep(3) #Waits for dynamic content to load
+                break
+    except Exception as e:
+        logging.error(f"Failed to click read more :{e}")
+        
 def scroll_and_extract(driver, article, max_scrolls=10): #Function 
     title = article.get('title')
     link = article.get('link')
@@ -56,18 +64,38 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
         return None
 
     time.sleep(3)
+    click_and_read(driver)
+    last_height = driver.execute_script("return document.body.scrollHeight") #Gets Height of the page to scroll properly
+    full_content=""
+    seen_texts=set()
 
     # Scroll to load dynamic content
     for _ in range(max_scrolls):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(2)
 
-    # Extract text from <p> tags
-        article_content = Article(link)
-        article_content.download()
-        article_content.parse()
+    # Extract text from page
+        html = driver.page_source  #Displays the html of page after scroll
+        article_content = Article(link) #Newspapery3k visits the site 
+        article_content.set_html(html)  #Newspapery3k collects the html tags
+        
+        try:
+            article_content.parse()#Newspapery3k extracts the main content
+            content_piece=article_content.text.strip()
+            if content_piece not in seen_texts:
+                full_content+= "+\n" +content_piece
+                seen_texts.add(content_piece)
+        except Exception as e:
+            logging.warning(f"Parse Failed at scroll :{e}")
+            continue
+        
+        new_height = driver.execute_script("return document.body.scrollHeight") #Height of the scrolled page 
+        if new_height == last_height: #Height of new scrolled page is same to previous page
+            break
+        last_height = new_height
 
-    if not article_content.strip():
+
+    if not  full_content.text.strip():
         logging.info(f"No content found for: {title}")
         return None
 
@@ -80,11 +108,11 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
     logging.info(f"Saved: {filename}")
     return article_content
     
-def extract_multiple_articles(article, max_scrolls=10):
+def extract_multiple_articles(inner_dict, max_scrolls=10):
     driver = setup_driver()  # Initialize the WebDriver
     all_articles = []
     
-    for dict_content in json_dict:
+    for dict_content in inner_dict:
         logging.info(f"Extracting article: {dict_content['title']}")
         try:
             if not is_browser_alive(driver):

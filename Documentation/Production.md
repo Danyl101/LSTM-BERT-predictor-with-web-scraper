@@ -97,6 +97,9 @@ ___________________________
 
 ___________________________
 
+Default Model [LOADER]
+
+The default model followed a similar architecture to that of the scraper since they both had a similar function , but this one used newpapery3k to parse through the articles whose links and titles were collected and stored in a json file , the loader is built to extract all the content in main articles and store it in a seperate folder as txt files with their respective title names 
 
 
 
