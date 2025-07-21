@@ -64,7 +64,6 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
         return None
 
     time.sleep(3)
-    click_and_read(driver)
     last_height = driver.execute_script("return document.body.scrollHeight") #Gets Height of the page to scroll properly
     full_content=""
     seen_texts=set()
@@ -72,6 +71,7 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
     # Scroll to load dynamic content
     for _ in range(max_scrolls):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        click_and_read(driver)
         time.sleep(2)
 
     # Extract text from page
@@ -95,7 +95,7 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
         last_height = new_height
 
 
-    if not  full_content.text.strip():
+    if not  full_content.strip():
         logging.info(f"No content found for: {title}")
         return None
 
@@ -103,10 +103,10 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
     filename = sanitize_filename(title) + ".txt"
     filepath = os.path.join("BERT_Content", filename)
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(article_content)
+        f.write(full_content)
 
     logging.info(f"Saved: {filename}")
-    return article_content
+    return full_content
     
 def extract_multiple_articles(inner_dict, max_scrolls=10):
     driver = setup_driver()  # Initialize the WebDriver
