@@ -13,7 +13,8 @@ from selenium.common.exceptions import StaleElementReferenceException
 logging.basicConfig(
     filename='Scraper.log',
     level=logging.INFO,  # Change to DEBUG for more detail
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filemode='w'
 )
 
 

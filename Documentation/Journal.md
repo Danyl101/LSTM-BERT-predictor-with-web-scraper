@@ -1,7 +1,7 @@
                                     POST CONSTRUCTION MODEL LOG
 
 
-Tags:[LSTM,TCN,SCRAPER,AUTOMATION,LOADER]
+Tags:[LSTM,TCN,SCRAPER,AUTOMATION,LOADER,SEPERATOR]
 ___________________________
 
 Default Model [TCN]
@@ -118,6 +118,20 @@ Scroll-->Click-->Article loaded-->Content parsed-->content stored-->Scroll again
                                 |
                                 |
 Scroll-->Click-->Url Stored-->Url check runs-->Article loads-->Content parsed-->Content stored-->Scroll again
+
+___________________________
+
+Default Model [SEPARATOR]
+
+So only a few files were actually properly extracted by loader , the exact reason or issue for others not being extracted is still not known due to incomplete logging(yet to finish),most possibly due to pay walls and sleep times being too little(2-3),but since a universal loader is extremely difficult , i made a system to seperate the scraped txts and links from the ones yet to be scraped , which is the separator , it identifies the file names of txt files loaded in bert content folder and matches that with the article titles present in dataset, and remove both of these to a new file thus preserving data , while making it usable 
+
+___________________________
+
+Iteration 1 [SEPARATOR]
+
+So the files had a small pathing issue which arose from the fact that the relative path of the files were off,since the path of the actual program being executed was different , so the actual files existed in a path that was completely different , than the filepaths the program created due to this relative directory issue 
+
+
 
 
 
