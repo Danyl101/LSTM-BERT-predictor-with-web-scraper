@@ -23,14 +23,25 @@ test_data=test_load[['Open','High','Low','Close','Volume']]
 lookback=60
 featurescale=['Open','High','Low','Volume']
 
+#MSE: 0.0928, RMSE: 0.3046, MAE: 0.2656, R²: -1.5399, MAPE: 11.22%
+
 #Sequence Handling Class
 class TimeSeriesDataset(Dataset):
     #Class calls for argument with constructor
-    def __init__(self, data, target_col, lookback):
+    def __init__(self, data, target_col, lookback,shift_dict):
         #Extracts values from columns and creates sequences
-        self.data = data[featurescale].values
         self.target = data[target_col].values
         self.lookback = lookback
+        
+        data_copy = data.copy()
+        if shift_dict:
+            for col, shift_amt in shift_dict.items():
+                data_copy[col] = data_copy[col].shift(shift_amt)
+
+        # Drop rows with NaNs introduced by shifting
+        data_copy = data_copy.dropna().reset_index(drop=True)
+        self.data = data_copy[featurescale].values
+        self.target = data_copy[target_col].values
 
     #Returns how many sequences are there in the dataset
     def __len__(self):
@@ -44,9 +55,9 @@ class TimeSeriesDataset(Dataset):
 
 
 #Calls the TimeSeriesDataset class to create sequences for each dataset
-train_dataset=TimeSeriesDataset(train_data, 'Close', lookback)
-val_dataset=TimeSeriesDataset(val_data, 'Close', lookback)
-test_dataset=TimeSeriesDataset(test_data, 'Close', lookback)
+train_dataset=TimeSeriesDataset(train_data, 'Close', lookback,shift_dict={'Close':0})
+val_dataset=TimeSeriesDataset(val_data, 'Close', lookback,shift_dict={'Close':0})
+test_dataset=TimeSeriesDataset(test_data, 'Close', lookback,shift_dict={'Close':0})
 
 # DataLoader to handle batching and shuffling 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
@@ -56,7 +67,7 @@ test_loader=DataLoader(test_dataset, batch_size=32)
 # 1. LSTM Model Definition
 class BiLSTMModel(nn.Module):
     #Defines the structure of the LSTM model
-    def __init__(self, input_size=4, hidden_size=64, num_layers=2):
+    def __init__(self, input_size=3, hidden_size=64, num_layers=2):
         super().__init__()
         self.hidden_size=hidden_size
         self.num_layers=num_layers
@@ -95,7 +106,7 @@ def evaluate_metrics(y_true, y_pred):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 #Initialize the model, loss function, and optimizer
-model = BiLSTMModel(input_size=4).to(device)
+model = BiLSTMModel(input_size=3).to(device)
 criterion = nn.MSELoss()
 criterion_train=TimeWeightedLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)

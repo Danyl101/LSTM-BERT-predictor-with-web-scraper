@@ -20,7 +20,7 @@ from newspaper import Article
 
 #Defines the logging function ,or how logs will be displayed 
 logging.basicConfig(
-    filename='Loader.log',
+    filename='Logs/Loader.log',
     level=logging.INFO,  # Change to DEBUG for more detail
     format='%(asctime)s - %(levelname)s - %(message)s',
     filemode='w'
@@ -45,6 +45,7 @@ def advanced_get(session, base_url, relative_url):
         logging.info(f"[{response.status_code}] {full_url} (Final URL: {response.url})")
         logging.debug(f"Headers: {response.headers}")
         logging.debug(f"Content Preview: {response.text[:500]}")  # log first 500 characters
+        logging.debug(traceback.format_exc())
 
         # Check if it's HTML
         if "text/html" not in response.headers.get("Content-Type", ""):
@@ -92,6 +93,7 @@ def click_and_read(driver):
                 break
     except Exception as e:
         logging.error(f"Failed to click read more :{e}") #Log message
+        logging.debug(traceback.format_exc())
         
 def scroll_and_extract(driver, article, max_scrolls=10): #Function 
     title = article.get('title')
@@ -99,12 +101,14 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
 
     if not title or not link:
         logging.info("Missing title or link.") #Log message
+        logging.debug(traceback.format_exc())
         return None
 
     try:
         driver.get(link)
     except (TimeoutException, WebDriverException):
         logging.info(f"Failed to load: {link}") #Log message
+        logging.debug(traceback.format_exc())
         return None
 
     time.sleep(3)
@@ -135,10 +139,12 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function
             full_content+= "+\n" +content_piece #Appends text 
             seen_texts.add(content_piece) #Adds text 
     except Exception as e:
-        logging.warning(f"Parse Failed at scroll :{e}") #Log message
+        logging.warning(f"Parse Failed at scroll :{e}")#Log message
+        logging.debug(traceback.format_exc())
 
     if not  full_content.strip():
         logging.info(f"No content found for: {title}") #Log message
+        logging.debug(traceback.format_exc())
         return None
 
     # Save as .txt file

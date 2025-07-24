@@ -1,7 +1,7 @@
                                     POST CONSTRUCTION MODEL LOG
 
 
-Tags:[LSTM,TCN,SCRAPER,AUTOMATION,LOADER,SEPERATOR]
+Tags:[LSTM,TCN,SCRAPER,AUTOMATION,LOADER,SEPERATOR,BILSTM]
 ___________________________
 
 Default Model [TCN]
@@ -48,14 +48,32 @@ Switched Model [LSTM]
 Since the TCN model was constantly returning large loss and MSE values no matter how standardized and preprocessed the dataset was ,so after going through various research papers , i decided to test out a basic lstm system , since it was much more potent at understanding long sequences of data, after moving to just a basic lstm model, it could predict basic movement of the market but not the magnitude , as it really only understands temporal features it could capture movements but not the magnitude of these moves ,after it predicted the movements to a certain degree i moved onto the scraper 
 
 Training Loss (0.04)
-Validation Loss (0.13)
+Validation Loss (0.07)
 MSE(0.11)
 
 This model worked , and returned a good enough output temporarily leaving it ,to build the rest of the system , will come back add technical indicators and polish it once the entire system is complete 
 
 ____________________________
 
+Iteration 1 [BILSTM]
+
+Decided to upgrade the lstm to a bilstm , since the bilstm would be able to capture much more temporal dependencies being of capable understanding both previous and future patterns from a certain point , also since training and validation,test having such a different values was a consistent issue , decided to add a custom loss function to the training dataset while keeeping original loss function for validationa and test
+
+Training Loss (0.02)
+Validation Loss(0.04)
+MSE(0.05)
+
 ____________________________
+
+Iteration 2 [BILSTM]
+
+So there was an apparent issue with close being fed into validation and test dataset as well , which lead to a small data leakage , which skewed the results of the final model , after correcting this the results of final model were and added other metrics along mse for various different cases
+
+Training Loss (0.02)
+Validation Loss(0.05)
+MSE: 0.0727, RMSE: 0.2696, MAE: 0.2419, R²: -0.5629, MAPE: 9.99%
+
+__________________________
 
 Default Model [SCRAPER]
 
@@ -119,6 +137,13 @@ Scroll-->Click-->Article loaded-->Content parsed-->content stored-->Scroll again
                                 |
 Scroll-->Click-->Url Stored-->Url check runs-->Article loads-->Content parsed-->Content stored-->Scroll again
 
+___________________________
+
+Iteartion 3 [LOADER]
+
+Build an advanced get function which creats a link with the site and receives logs from there , thus allowing more advanced debugging 
+
+___________________________
 ___________________________
 
 Default Model [SEPARATOR]

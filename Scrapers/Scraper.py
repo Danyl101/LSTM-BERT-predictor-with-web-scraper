@@ -14,7 +14,7 @@ import urllib.robotparser
 from urllib.parse import urlparse
 
 logging.basicConfig(
-    filename='Scraper.log',
+    filename='Logs/Scraper.log',
     level=logging.INFO,  # Change to DEBUG for more detail
     format='%(asctime)s - %(levelname)s - %(message)s',
     filemode='w'

@@ -7,7 +7,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 logging.basicConfig(
-    filename='Compare.log',
+    filename='Logs/Compare.log',
     level=logging.INFO,  # Change to DEBUG for more detail
     format='%(asctime)s - %(levelname)s - %(message)s',
     filemode='w'
