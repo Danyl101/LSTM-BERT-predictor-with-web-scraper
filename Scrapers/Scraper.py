@@ -9,6 +9,9 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException
+import requests
+import urllib.robotparser
+from urllib.parse import urlparse
 
 logging.basicConfig(
     filename='Scraper.log',
@@ -24,6 +27,36 @@ def setup_driver(): #Setup Chrome WebDriver
     chrome_options.add_argument("--no-sandbox") # Bypass OS security model
     chrome_options.add_argument("--disable-dev-shm-usage")
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options) #Creates web driver instance
+
+def fetch_robots_txt(site):
+    try:
+        resp = requests.get(site + "/robots.txt", timeout=10)
+        return resp.text
+    except:
+        return None
+    
+def can_scrape(url, user_agent='*'):
+    try:
+        # Extract domain
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+        # Construct robots.txt URL
+        robots_url = f"{base_url}/robots.txt"
+
+        # Read and parse robots.txt
+        rp = urllib.robotparser.RobotFileParser()
+        rp.set_url(robots_url)
+        rp.read()
+
+        # Check if allowed
+        return rp.can_fetch(user_agent, url)
+    except Exception as e:
+        logging.error(f"[WARN] Could not parse robots.txt for {url}: {e}")
+        # Assume allowed if robots.txt is unreachable
+        return True
+    
+    #5542
 
 def scroll_and_scrape(driver, url, max_scrolls=10):#Function to scroll and scrape articles from a given URL
     try:
@@ -62,18 +95,18 @@ def scroll_and_scrape(driver, url, max_scrolls=10):#Function to scroll and scrap
         last_height = new_height 
         
         cleaned_articles = []
-        blacklist = [
-            "login", "signup", "contact", "terms", "privacy", "register", "feedback", "ads", "help",
-            "sports", "cricket", "entertainment", "movies", "lifestyle", "tech", "gadgets", "education", 
-            "opinion", "horoscope", "health", "travel", "fashion", "food", "video"
-            ] #Blacklisted Sites and links 
-
+        goodlist = [
+    "market", "finance", "stock", "business", "economy", "invest", "earnings",
+    "ipo", "valuation", "bank", "crypto", "nifty", "sensex", "index",
+    "inflation", "budget", "gdp", "fii", "dii", "commodity", "forex", "mutual"]# Clean Sites and links 
         
-        for title, link in raw_articles: #Function to filter out blacklisted sites from the articles extracted 
-            if not any(bad in link.lower() for bad in blacklist):
-                cleaned_articles.append({
-                    "title": title.lower(),
-                    "link": link.lower()
+
+        for title, link in raw_articles: #Function to filter only good sites from the articles extracted 
+            if any(good in link.lower() for good in goodlist):
+                if(can_scrape(link)):
+                    cleaned_articles.append({
+                        "title": title.lower(),
+                        "link": link.lower()
                 }) #Appends clean sites to final list 
 
     return cleaned_articles #Returns titles and links of articles 
@@ -107,7 +140,7 @@ def is_browser_alive(driver):#Checks if a driver is healthy or not
 
 if __name__ == "__main__":
     websites = [
-    # ✅ Indian Financial News
+    # 🇮🇳 India
     "https://economictimes.indiatimes.com/news",
     "https://economictimes.indiatimes.com/markets",
     "https://www.livemint.com/latest-news",
@@ -118,26 +151,54 @@ if __name__ == "__main__":
     "https://www.financialexpress.com/market",
     "https://www.cnbctv18.com/market",
     "https://www.ndtvprofit.com",
+    "https://www.thehindubusinessline.com/markets",
+    "https://www.indiainfoline.com/news",  # stock/IPO updates
 
-    # ✅ Global Financial News
-    "https://www.nasdaq.com/news-and-insights",
+    # 🌐 United States / Global
+    "https://finance.yahoo.com",
     "https://www.investing.com/news/stock-market-news",
+    "https://www.nasdaq.com/news-and-insights",
     "https://www.bloomberg.com/markets",
     "https://www.reuters.com/markets",
-    "https://www.tradingview.com/news",
+    "https://www.marketwatch.com/latest-news",
+    "https://www.benzinga.com/news",
+    "https://www.zacks.com/stock/news",
+    "https://www.seekingalpha.com/market-news",
+    "https://www.fool.com/investing",
+    "https://www.wsj.com/news/markets",  # Wall Street Journal (paywalled)
+    "https://www.barrons.com/market-data",  # Market-focused news
+    "https://www.theinvestorschronicle.co.uk/",  # London-based weekly by FT
 
-    # ✅ New Additions: Global + Long-Term Investor Perspective
-    "https://finance.yahoo.com",  # API-friendly, global coverage
-    "https://seekingalpha.com/market-news",  # Earnings, opinion-rich
-    "https://www.fool.com/investing",  # Long-term stock analyses
-    "https://www.marketwatch.com/latest-news",  # U.S. economic and stock headlines
-    "https://www.benzinga.com/news",  # Fast, earnings-driven alerts
-    "https://www.zacks.com/stock/news",  # Quantitative investment research
-    "https://www.morningstar.com/news",  # Clean, structured data
-    "https://www.fxstreet.com/news",  # Forex and macroeconomic news
-    "https://www.cnbc.com/world/?region=world",  # Global stock, economy coverage
-    "https://www.ft.com/markets",  # Deep dive (requires headless or subscription)
-    ]
+    # 🌍 Canada
+    "https://www.bnnbloomberg.ca/",  # BNN Bloomberg
+
+    # 🇦🇺 Australia / NZ
+    "https://www.afr.com/",  # Australian Financial Review
+    "https://business.nine.com.au/business-news",  # general market
+    "https://www.businessspectator.com.au/",  # Australian business insights
+    "https://www.capitalbrief.com/",  # Australian business summary
+    "https://www.nzherald.co.nz/business/",  # NZ business section
+
+    # 🇬🇧 United Kingdom / Europe
+    "https://www.ft.com/markets",  # Financial Times :contentReference[oaicite:1]{index=1}
+    "https://www.moneyweek.com/",  # British investment weekly :contentReference[oaicite:2]{index=2}
+    "https://www.reuters.com/finance",  # Reuters finance hub :contentReference[oaicite:3]{index=3}
+
+    # 🌏 Hong Kong / Asia-Pacific
+    "https://www.financeasia.com/",  # Asia‑Pacific capital markets :contentReference[oaicite:4]{index=4}
+
+    # 💱 Forex / Macro-focused
+    "https://www.fxstreet.com/news",
+    "https://www.tradingeconomics.com/news",  # macro indicators & policy
+
+    # 🪙 Crypto (if you pivot later)
+    "https://www.coindesk.com/",
+    "https://www.cointelegraph.com/",
+
+    # 🧠 General / Quant Education
+    "https://www.investopedia.com/news/",
+]
+    #4
 
     cleaned_articles = scrape_multiple_sites(websites, max_scrolls=15)
     logging.info(f"Total articles scraped: {len(cleaned_articles)}") #Returns no of articles that are available after cleaning

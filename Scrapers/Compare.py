@@ -7,7 +7,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 logging.basicConfig(
-    filename='Scraper.log',
+    filename='Compare.log',
     level=logging.INFO,  # Change to DEBUG for more detail
     format='%(asctime)s - %(levelname)s - %(message)s',
     filemode='w'
@@ -48,7 +48,9 @@ final_bert_folder = Path("Final_bert_folder")
 final_bert_folder.mkdir(parents=True, exist_ok=True)
 
 # === Load Data ===
-scraped_dict = load_json(scraped_json_path)
+scraped_dict_outside = load_json(scraped_json_path)
+scraped_dict=scraped_dict_outside['articles']
+
 articles_json = []
 remaining_articles = []
 

@@ -18,6 +18,7 @@ from urllib.parse import urljoin
 from datetime import datetime
 from newspaper import Article
 
+#Defines the logging function ,or how logs will be displayed 
 logging.basicConfig(
     filename='Loader.log',
     level=logging.INFO,  # Change to DEBUG for more detail
@@ -32,13 +33,13 @@ headers = {
     "Accept-Encoding": "gzip, deflate, br",
 }
 
-
+#A function to get advanced logs by accessing the actual url 
 def advanced_get(session, base_url, relative_url):
     try:
-        full_url = urljoin(base_url, relative_url)
-        logging.info(f"Attempting to fetch: {full_url}")
+        full_url = urljoin(base_url, relative_url)#Base url accesses parent site , relative url accesses the exact site driver sees
+        logging.info(f"Attempting to fetch: {full_url}") #Fetches the site driver sees
 
-        response = session.get(full_url, headers=headers, timeout=10, allow_redirects=True)
+        response = session.get(full_url, headers=headers, timeout=10, allow_redirects=True) #Creates a link between site and program to send messages across
 
         # Log basic response info
         logging.info(f"[{response.status_code}] {full_url} (Final URL: {response.url})")
@@ -50,8 +51,9 @@ def advanced_get(session, base_url, relative_url):
             logging.warning(f"Non-HTML content at {full_url}")
 
         response.raise_for_status()
-        return response.text
+        return response.text #Returns the messages from the site
 
+    #Log messages
     except requests.exceptions.HTTPError as e:
         logging.error(f"HTTP Error for {full_url}: {e.response.status_code} - {e.response.reason}")
     except requests.exceptions.ConnectionError as e:
@@ -89,78 +91,76 @@ def click_and_read(driver):
                 time.sleep(3) #Waits for dynamic content to load
                 break
     except Exception as e:
-        logging.error(f"Failed to click read more :{e}")
+        logging.error(f"Failed to click read more :{e}") #Log message
         
 def scroll_and_extract(driver, article, max_scrolls=10): #Function 
     title = article.get('title')
     link = article.get('link')
 
     if not title or not link:
-        logging.info("Missing title or link.")
+        logging.info("Missing title or link.") #Log message
         return None
 
     try:
         driver.get(link)
     except (TimeoutException, WebDriverException):
-        logging.info(f"Failed to load: {link}")
+        logging.info(f"Failed to load: {link}") #Log message
         return None
 
     time.sleep(3)
     last_height = driver.execute_script("return document.body.scrollHeight") #Gets Height of the page to scroll properly
-    full_content=""
-    seen_texts=set()
+    full_content="" #Initialize empty string to constantly append content through on every scroll
+    seen_texts=set() #Initializes string to save text that is already seen
 
     # Scroll to load dynamic content
     for _ in range(max_scrolls):
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        click_and_read(driver)
-        time.sleep(2)
-
-    # Extract text from page
-        html = driver.page_source  #Displays the html of page after scroll
-        article_content = Article(link) #Newspapery3k visits the site 
-        article_content.set_html(html)  #Newspapery3k collects the html tags
-        
-        try:
-            article_content.parse()#Newspapery3k extracts the main content
-            content_piece=article_content.text.strip()
-            if content_piece not in seen_texts:
-                full_content+= "+\n" +content_piece
-                seen_texts.add(content_piece)
-        except Exception as e:
-            logging.warning(f"Parse Failed at scroll :{e}")
-            continue
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);") #Scrolls the page 
+        click_and_read(driver) 
+        time.sleep(2) #Waits for dynamic content to load 
         
         new_height = driver.execute_script("return document.body.scrollHeight") #Height of the scrolled page 
         if new_height == last_height: #Height of new scrolled page is same to previous page
             break
         last_height = new_height
 
+    # Extract text from page
+    html=advanced_get(requests.Session(),base_url=link,relative_url='') #Displays the html of page after scroll
+    article_content = Article(link) #Newspapery3k initializes article class with the link given        
+    article_content.set_html(html)  #Newspapery3k collects the html tags
+        
+    try:
+        article_content.parse() #Newspapery3k extracts the main content
+        content_piece=article_content.text.strip() #Converts text
+        if content_piece not in seen_texts:
+            full_content+= "+\n" +content_piece #Appends text 
+            seen_texts.add(content_piece) #Adds text 
+    except Exception as e:
+        logging.warning(f"Parse Failed at scroll :{e}") #Log message
 
     if not  full_content.strip():
-        logging.info(f"No content found for: {title}")
+        logging.info(f"No content found for: {title}") #Log message
         return None
 
     # Save as .txt file
-    filename = sanitize_filename(title) + ".txt"
-    filepath = os.path.join("BERT_Content", filename)
+    filename = sanitize_filename(title) + ".txt" #Cleans file names
+    filepath = os.path.join("BERT_Content", filename) #Creates filepath for the files
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(full_content)
+        f.write(full_content) #Writes content to the file
 
-    logging.info(f"Saved: {filename}")
+    logging.info(f"Saved: {filename}") #Log message
     return full_content
     
 def extract_multiple_articles(inner_dict, max_scrolls=10):
     driver = setup_driver()  # Initialize the WebDriver
     all_articles = []
     
-    for dict_content in inner_dict:
+    for dict_content in inner_dict: #Iterates through every link in scraped list
         logging.info(f"Extracting article: {dict_content['title']}")
         try:
-            if not is_browser_alive(driver):
+            if not is_browser_alive(driver): #Checks if browser is working
                 driver.quit()
                 driver = setup_driver()
-            data = scroll_and_extract(driver, dict_content, max_scrolls=max_scrolls)
+            data = scroll_and_extract(driver, dict_content, max_scrolls=max_scrolls) #Extracts contents from articles
             all_articles.append(data)
         except:
             logging.error(f"Error extracting article: {dict_content['title']}")
@@ -177,7 +177,7 @@ def is_browser_alive(driver):
         return False
     
 if __name__=="__main__":
-    extracted_articles = extract_multiple_articles(json_dict, max_scrolls=10)
+    extracted_articles = extract_multiple_articles(json_dict, max_scrolls=10) #Calls the complete extraction process
     logging.info(f"Total Extracted articles:{len(extracted_articles)}")
     
     
