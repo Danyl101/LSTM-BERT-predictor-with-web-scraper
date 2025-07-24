@@ -23,8 +23,6 @@ test_data=test_load[['Open','High','Low','Close','Volume']]
 lookback=60
 featurescale=['Open','High','Low','Volume']
 
-#MSE: 0.0928, RMSE: 0.3046, MAE: 0.2656, R²: -1.5399, MAPE: 11.22%
-
 #Sequence Handling Class
 class TimeSeriesDataset(Dataset):
     #Class calls for argument with constructor

@@ -141,7 +141,7 @@ ___________________________
 
 Iteartion 3 [LOADER]
 
-Build an advanced get function which creats a link with the site and receives logs from there , thus allowing more advanced debugging 
+Build an advanced get function which creats a link with the site and receives logs from there , thus allowing more advanced debugging, 
 
 ___________________________
 ___________________________
