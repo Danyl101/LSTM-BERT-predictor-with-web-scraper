@@ -141,7 +141,7 @@ ___________________________
 
 Iteartion 3 [LOADER]
 
-Build an advanced get function which creats a link with the site and receives logs from there , thus allowing more advanced debugging, 
+Build an advanced get function which creats a link with the site and receives logs from there , thus allowing more advanced debugging, added debugging into every single layer of the program and found the core issues which was a pathing issue , where new spaces caused error in the windows file naming system , updated the sanitizer of filenames  
 
 ___________________________
 ___________________________
