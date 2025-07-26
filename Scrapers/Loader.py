@@ -48,12 +48,7 @@ def extract_multiple_articles(inner_dict, max_scrolls=10):
             if not is_browser_alive(driver): #Checks if browser is working
                 driver.quit()
                 driver = setup_driver()
-            link= dict_content['link'] #Gets link from the dictionary
-            title= dict_content['title'] #Gets title from the dictionary
-            if("economictimes" in link):
-                data= get_article_text_playwright(link,title) #Executes playwright function
-            else:
-                data = scroll_and_extract(driver, dict_content, max_scrolls=max_scrolls) #Extracts contents from articles
+            data = scroll_and_extract(driver, dict_content, max_scrolls=max_scrolls) #Extracts contents from articles
             all_articles.append(data)
         except:
             logging.error(f"Error extracting article: {dict_content['title']}")

@@ -16,6 +16,8 @@ from newspaper import Article
 # Assuming these are defined in your own codebase
 from utils import sanitize_filename, save_file,logging,headers
 
+from playwright_extract import get_article_text_playwright
+
 
 #A function to get advanced logs by accessing the actual url 
 def advanced_get(session, base_url, relative_url):
@@ -115,8 +117,6 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function to scroll thr
             if content_piece not in seen_texts:
                 full_content+= "+\n" +content_piece #Appends text 
                 seen_texts.add(content_piece) #Adds text
-                screenshot_path = os.path.join("Logs", f"{sanitize_filename(title)[:40]}_fail.png") #Takes screenshot of the page when failure occured
-                driver.save_screenshot(screenshot_path)
         except Exception as e:
             logging.warning(f"Parse Failed at scroll :{e}")#Log message
             logging.debug(traceback.format_exc())
@@ -129,5 +129,11 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function to scroll thr
         except Exception as e:
             logging.error(f"Height comparison failed at {last_height} :{e}")
             logging.debug(traceback.format_exc())
-        
-    save_file(title, full_content) #Saves the file after every scroll
+    
+    if(len(full_content)<40):
+        try:
+            get_article_text_playwright(link, title)
+        except Exception as e:
+            logging.error(f"Playwright fallback failed for {link}: {e}")
+    else:
+        save_file(title, full_content) #Saves the file after every scroll

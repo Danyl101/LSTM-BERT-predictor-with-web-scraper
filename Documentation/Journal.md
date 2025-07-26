@@ -155,6 +155,17 @@ Iteration 5 [LOADER]
 
 Abandoned the xpath function and instead decided to use a new library playwright , which is capable of rendering and parsing even the most js heavy and complicated and with a few tweaks , it was capable of parsing through the most broken html sites , but since it was somewhat slow it is used alongside selenium-newspaper,as in certain links are fed into playwright and rest are fed into newspaper
 ___________________________
+
+Iteration 6 [LOADER]
+
+So playwright began working for me , but certain articles became stuck on parsing for extremely long times ,so added a timeout function for playwright , also split everything into modules and its own seperate programs, there was a tiny issue with the loader where if the link of the site wasnt explicitly named then it would automatically go to selenium-newspaper which could cause issues , so instead of checking site name at loader , every link is sent to selenium , and if it fails then its sent to playwright
+
+                                            Sucess
+            LOADER---->SELENIUM-NEWSPAPER------------>FILE SAVED
+                            |
+                            | Fail
+                            |
+                        PLAYWRIGHT----->FILE SAVED
 ___________________________
 
 Default Model [SEPARATOR]
