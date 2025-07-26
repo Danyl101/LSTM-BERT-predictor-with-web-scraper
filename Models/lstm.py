@@ -31,6 +31,7 @@ class TimeSeriesDataset(Dataset):
         self.target = data[target_col].values
         self.lookback = lookback
         
+        #Copies data for shifting of required columns
         data_copy = data.copy()
         if shift_dict:
             for col, shift_amt in shift_dict.items():
@@ -79,18 +80,20 @@ class BiLSTMModel(nn.Module):
         out = out[:, -1, :]  # Take the last timestep
         return self.fc(out).squeeze()
     
+#Custom Loss function
 class TimeWeightedLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
     def forward(self, y_pred, y_true):
-        batch_size = y_true.shape[0]
+        batch_size = y_true.shape[0] 
         weights = torch.linspace(1, 2, steps=batch_size).to(y_pred.device)
         return torch.mean(weights * (y_pred - y_true) ** 2)
     
+#Function for metrics evaluation
 def evaluate_metrics(y_true, y_pred):
-    y_true = y_true.detach().cpu().numpy()
-    y_pred = y_pred.detach().cpu().numpy()
+    y_true = y_true.detach().cpu().numpy() #Takes the actual values
+    y_pred = y_pred.detach().cpu().numpy() #Takes the predicted values
 
     mse = mean_squared_error(y_true, y_pred)
     rmse = mse ** 0.5
@@ -98,7 +101,7 @@ def evaluate_metrics(y_true, y_pred):
     r2 = r2_score(y_true, y_pred)
     mape = (np.abs((y_true - y_pred) / y_true)).mean() * 100
 
-    return mse, rmse, mae, r2, mape
+    return mse, rmse, mae, r2, mape #Returns various metrics
 
 #Check if GPU is available and set device accordingly    
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -149,7 +152,7 @@ def predict(model, loader):
             preds.append(pred) #Appends models predictions to the list
             targets.append(y) #Appends actual values to the list
             
-    preds = torch.cat(preds, dim=0)
+    preds = torch.cat(preds, dim=0) #Converts datatype back for metrics evaluation
     targets = torch.cat(targets, dim=0)
 
     mse, rmse, mae, r2, mape = evaluate_metrics(preds, targets)
