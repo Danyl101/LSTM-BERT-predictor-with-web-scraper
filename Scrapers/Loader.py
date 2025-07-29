@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 
-from playwright_extract import get_article_text_playwright  # Importing the Playwright function
+from playwright_extract import get_article_text_playwright
 
 from Selenium_newspaper import scroll_and_extract  # Importing the Selenium function
 
@@ -48,6 +48,9 @@ def extract_multiple_articles(inner_dict, max_scrolls=10):
             if not is_browser_alive(driver): #Checks if browser is working
                 driver.quit()
                 driver = setup_driver()
+            link=dict_content['link']
+            title=dict_content['title']
+            #data =get_article_text_playwright(link,title)
             data = scroll_and_extract(driver, dict_content, max_scrolls=max_scrolls) #Extracts contents from articles
             all_articles.append(data)
         except:

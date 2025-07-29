@@ -10,6 +10,7 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException
 
 from newspaper import Article
 
@@ -85,7 +86,11 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function to scroll thr
     full_content="" #Initialize empty string to constantly append content through on every scroll
     seen_texts=set() #Initializes string to save text that is already seen
     time.sleep(3)
-    last_height = driver.execute_script("return document.body.scrollHeight")#Gets Height of the page to scroll properly
+    try:
+        last_height = driver.execute_script("return document.body.scrollHeight")#Gets Height of the page to scroll properly
+    except Exception as e:
+        logging.error(f"Failed to get initial page height: {e}")
+        logging.debug(traceback.format_exc())
     
     # Scroll to load dynamic content
     for _ in range(max_scrolls):
@@ -97,7 +102,10 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function to scroll thr
                 EC.presence_of_element_located((By.CSS_SELECTOR, "article, div.article__content, div.mntl-sc-page, div.content-container"))
             ) #Waits for certain tags to appear before proceeding 
             for num_scrolls in range(no_of_scrolls):
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")#Scrolls the page
+                try:
+                    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")#Scrolls the page
+                except StaleElementReferenceException:
+                    logging.warning(f"Stale element reference at scroll {num_scrolls}, retrying...")
             click_and_read(driver) 
             time.sleep(2) #Waits for dynamic content to load 
         except Exception as e:
@@ -117,10 +125,9 @@ def scroll_and_extract(driver, article, max_scrolls=10): #Function to scroll thr
             if content_piece not in seen_texts:
                 full_content+= "+\n" +content_piece #Appends text 
                 seen_texts.add(content_piece) #Adds text
-        except Exception as e:
+        except StaleElementReferenceException as e:
             logging.warning(f"Parse Failed at scroll :{e}")#Log message
             logging.debug(traceback.format_exc())
-            
         try:
             new_height = driver.execute_script("return document.body.scrollHeight") #Height of the scrolled page 
             if new_height == last_height: #Height of new scrolled page is same to previous page

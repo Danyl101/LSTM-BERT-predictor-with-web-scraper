@@ -108,6 +108,19 @@ with torch.no_grad():
     mse, rmse, mae, r2, mape = evaluate_metrics(preds, targets)
     return preds,targets,mse,rmse,mae,r2,mape
 
+_________________________________________________
+
+Error
+
+[I 2025-07-28 01:02:56,691] A new study created in memory with name: no-name-2707f0d1-f31f-47e4-8416-077f0432a63e       
+d:\Prediction Model\venv\Lib\site-packages\torch\nn\modules\loss.py:610: UserWarning: Using a target size (torch.Size([1])) that is different to the input size (torch.Size([])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+
+  Reason & Solution
+
+  return self.fc(out).squeeze()
+
+  Essentially what happened here was X[B,H] and Y[B] are supposed to be matched for bayesian optimization , but the squeeze function present removes any 1 dimensional value present , since at the end H=1 & B=1 , it meant that X had both dimensions removed X[] Y[B] which caused a mismatch , torch tries to broadcast these together to correct , but such acts can cause issues
 
 
 

@@ -47,8 +47,8 @@ Switched Model [LSTM]
 
 Since the TCN model was constantly returning large loss and MSE values no matter how standardized and preprocessed the dataset was ,so after going through various research papers , i decided to test out a basic lstm system , since it was much more potent at understanding long sequences of data, after moving to just a basic lstm model, it could predict basic movement of the market but not the magnitude , as it really only understands temporal features it could capture movements but not the magnitude of these moves ,after it predicted the movements to a certain degree i moved onto the scraper 
 
-Training Loss (0.04)
-Validation Loss (0.07)
+Training Loss (0.5)
+Validation Loss (0.8)
 MSE(0.11)
 
 This model worked , and returned a good enough output temporarily leaving it ,to build the rest of the system , will come back add technical indicators and polish it once the entire system is complete 
@@ -59,20 +59,28 @@ Iteration 1 [BILSTM]
 
 Decided to upgrade the lstm to a bilstm , since the bilstm would be able to capture much more temporal dependencies being of capable understanding both previous and future patterns from a certain point , also since training and validation,test having such a different values was a consistent issue , decided to add a custom loss function to the training dataset while keeeping original loss function for validationa and test
 
-Training Loss (0.02)
-Validation Loss(0.04)
+Training Loss (0.2)
+Validation Loss(0.5)
 MSE(0.05)
 
 ____________________________
 
 Iteration 2 [BILSTM]
 
-So there was an apparent issue with close being fed into validation and test dataset as well , which lead to a small data leakage , which skewed the results of the final model , after correcting this the results of final model were and added other metrics along mse for various different cases
+So there was an apparent issue with close being fed into validation and test dataset as well , which lead to a small data leakage , which skewed the results of the final model , after correcting this the results of final model were and added other metrics along mse for various different cases ,
 
-Training Loss (0.02)
-Validation Loss(0.05)
+Training Loss (0.2)
+Validation Loss(0.5)
 MSE: 0.0727, RMSE: 0.2696, MAE: 0.2419, R²: -0.5629, MAPE: 9.99%
 
+__________________________
+
+Iteration 3 [BILSTM]
+
+Since the model now had somewhat good results and the overall architecture was good , i decided to begin fine tuning the hyperparameters , for this i implemented bayesian optimization ,initially wanted to do gaussian functions by myself but since that requires some time and acquisition function could be difficult ,i decided to go for optuna , but there was an issue where optuna constantly became stuck ,so added in a bunch of try catch blocks everywhere and added return(inf) to the optuna block which solved it
+
+
+__________________________
 __________________________
 
 Default Model [SCRAPER]
@@ -99,13 +107,13 @@ Fully utilizing Selenium now , instead of checking individual tags for certain k
 
 __________________________
 
-Iteration 4[SCRAPER,AUTOMATION]
+Iteration 4[SCRAPER]
 
 Since BERT requires a large volume of data , i decided to add more sites to scrape for the model , initially i decided to do this manually ,just adding links to url and then building the for loop myself , i realised it would take alot of time , so instead decided to automate the process ,uttilizing two arrays , one for the website links and one for the saved articles, i also added a bert scroller to this t access more links that might not have been previously accessible just through loading javascript using selenium
 
 __________________________
 
-Iteration 5 [SCRAPER,AUTOMATION]
+Iteration 5 [SCRAPER]
 
 Added a blacklist array which indicates the sites to not scrape, this was done so that bert does not scrape or access junk sites , also added alot of try exception blocks so that program dosent crash when a single site dosent load
 

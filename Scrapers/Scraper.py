@@ -69,7 +69,6 @@ def scroll_and_scrape(driver, url, max_scrolls=10):#Function to scroll and scrap
 
     last_height = driver.execute_script("return document.body.scrollHeight") #Gets Height of the page to scroll properly
     raw_articles =[]
-    cleaned_articles=[]
 
     for _ in range(max_scrolls): #Function to Scroll through page
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);") #Scrolls through page
@@ -143,8 +142,6 @@ if __name__ == "__main__":
     # 🇮🇳 India
     "https://economictimes.indiatimes.com/news",
     "https://economictimes.indiatimes.com/markets",
-    "https://www.livemint.com/latest-news",
-    "https://www.livemint.com/market",
     "https://www.moneycontrol.com/news/business",
     "https://www.moneycontrol.com/news/market",
     "https://www.business-standard.com/category/markets",
