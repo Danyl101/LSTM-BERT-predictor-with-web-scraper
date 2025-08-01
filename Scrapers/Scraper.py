@@ -95,13 +95,11 @@ def scroll_and_scrape(driver, url, max_scrolls=10):#Function to scroll and scrap
         
         cleaned_articles = []
         goodlist = [
-    "market", "finance", "stock", "business", "economy", "invest", "earnings",
-    "ipo", "valuation", "bank", "crypto", "nifty", "sensex", "index",
-    "inflation", "budget", "gdp", "fii", "dii", "commodity", "forex", "mutual"]# Clean Sites and links 
+    "russia","war","ukraine"]# Clean Sites and links 
         
 
         for title, link in raw_articles: #Function to filter only good sites from the articles extracted 
-            if any(good in link.lower() for good in goodlist):
+            if all(good in link.lower() for good in goodlist):
                 if(can_scrape(link)):
                     cleaned_articles.append({
                         "title": title.lower(),
@@ -138,64 +136,33 @@ def is_browser_alive(driver):#Checks if a driver is healthy or not
 
 
 if __name__ == "__main__":
-    websites = [
-    # 🇮🇳 India
-    "https://economictimes.indiatimes.com/news",
-    "https://economictimes.indiatimes.com/markets",
-    "https://www.moneycontrol.com/news/business",
-    "https://www.moneycontrol.com/news/market",
-    "https://www.business-standard.com/category/markets",
-    "https://www.financialexpress.com/market",
-    "https://www.cnbctv18.com/market",
-    "https://www.ndtvprofit.com",
-    "https://www.thehindubusinessline.com/markets",
-    "https://www.indiainfoline.com/news",  # stock/IPO updates
+    websites=   [
+    "https://www.thehindu.com/",
+    "https://www.indianexpress.com/",
+    "https://www.hindustantimes.com/",
+    "https://www.timesofindia.indiatimes.com/",
+    "https://www.deccanherald.com/",
+    "https://www.livemint.com/",
+    "https://www.thewire.in/",
+    "https://www.newslaundry.com/",
+    "https://www.scroll.in/",
 
-    # 🌐 United States / Global
-    "https://finance.yahoo.com",
-    "https://www.investing.com/news/stock-market-news",
-    "https://www.nasdaq.com/news-and-insights",
-    "https://www.bloomberg.com/markets",
-    "https://www.reuters.com/markets",
-    "https://www.marketwatch.com/latest-news",
-    "https://www.benzinga.com/news",
-    "https://www.zacks.com/stock/news",
-    "https://www.seekingalpha.com/market-news",
-    "https://www.fool.com/investing",
-    "https://www.wsj.com/news/markets",  # Wall Street Journal (paywalled)
-    "https://www.barrons.com/market-data",  # Market-focused news
-    "https://www.theinvestorschronicle.co.uk/",  # London-based weekly by FT
-
-    # 🌍 Canada
-    "https://www.bnnbloomberg.ca/",  # BNN Bloomberg
-
-    # 🇦🇺 Australia / NZ
-    "https://www.afr.com/",  # Australian Financial Review
-    "https://business.nine.com.au/business-news",  # general market
-    "https://www.businessspectator.com.au/",  # Australian business insights
-    "https://www.capitalbrief.com/",  # Australian business summary
-    "https://www.nzherald.co.nz/business/",  # NZ business section
-
-    # 🇬🇧 United Kingdom / Europe
-    "https://www.ft.com/markets",  # Financial Times :contentReference[oaicite:1]{index=1}
-    "https://www.moneyweek.com/",  # British investment weekly :contentReference[oaicite:2]{index=2}
-    "https://www.reuters.com/finance",  # Reuters finance hub :contentReference[oaicite:3]{index=3}
-
-    # 🌏 Hong Kong / Asia-Pacific
-    "https://www.financeasia.com/",  # Asia‑Pacific capital markets :contentReference[oaicite:4]{index=4}
-
-    # 💱 Forex / Macro-focused
-    "https://www.fxstreet.com/news",
-    "https://www.tradingeconomics.com/news",  # macro indicators & policy
-
-    # 🪙 Crypto (if you pivot later)
-    "https://www.coindesk.com/",
-    "https://www.cointelegraph.com/",
-
-    # 🧠 General / Quant Education
-    "https://www.investopedia.com/news/",
+    "https://www.reuters.com/",
+    "https://www.apnews.com/",
+    "https://www.bbc.com/news",
+    "https://www.aljazeera.com/news/",
+    "https://www.france24.com/en/",
+    "https://www.dw.com/en/top-stories/s-9097",
+    "https://www.cnn.com/world",
+    "https://www.nytimes.com/section/world",
+    "https://www.nbcnews.com/news/world",
+    "https://www.cbsnews.com/world",
+    "https://www.theguardian.com/world",
+    "https://www.japantimes.co.jp/news/",
+    "https://www.straitstimes.com/news/world",
+    "https://www.scmp.com/news"
 ]
-    #4
+
 
     cleaned_articles = scrape_multiple_sites(websites, max_scrolls=15)
     logging.info(f"Total articles scraped: {len(cleaned_articles)}") #Returns no of articles that are available after cleaning
